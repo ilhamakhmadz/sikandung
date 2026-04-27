@@ -1,0 +1,14 @@
+.menu nav a {
+    border-bottom: 1px solid #ed12c1;
+}
+
+.menu {
+    position: fixed;
+    z-index: 100;
+    color: #000000;
+    background: #ffffff;
+    width: 200px;
+    left: 0px;
+    top: 0px;
+    height: 100%;
+}

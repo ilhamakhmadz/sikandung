@@ -1,0 +1,118 @@
+<?php
+
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+class Wilayah extends CI_Controller
+{
+    // public function desa()
+    // {
+    //     header('Content-type: application/json');
+    //     $this->db->select('Kd_Desa, Nama_Desa as text');
+    //     $this->db->from('master_kecamatan');
+    //     $this->db->where('Kd_Kec <>', 0);
+    //     if ($this->input->get('q')) {
+    //         $this->db->where("Nama_Desa LIKE '%" . $this->input->get('q') . "%'");
+    //     }
+    //     $data = $this->db->order_by('Nama_Desa', 'asc');
+    //     echo json_encode($data->get()->result());
+    // }
+    public function desa()
+    {
+        header('Content-type: application/json');
+        $parent_id = $_GET['desaId'];
+
+        $this->db->select('Kd_Desa, Nama_Desa as text');
+        $this->db->from('master_desa');
+        $this->db->where('Kd_Kec', $parent_id);
+        if ($this->input->get('q')) {
+            $this->db->where("Nama_Desa LIKE '%" . $this->input->get('q') . "%'");
+        }
+        $data = $this->db->order_by('Nama_Desa', 'asc');
+        echo json_encode($data->get()->result());
+    }
+
+    // public function kota()
+    // {
+    //     header('Content-type: application/json');
+    //     $parent_id = $_GET['provinsiId'];
+
+    //     $this->db->select('*');
+    //     $this->db->from('m_wilayah');
+    //     $this->db->where('parent_id', $parent_id);
+    //     $this->db->where('id <>', 0);
+    //     if ($this->input->get('q')) {
+    //         $this->db->where("nama LIKE '%" . $this->input->get('q') . "%'");
+    //     }
+    //     $data = $this->db->order_by('nama', 'asc');
+    //     echo json_encode($data->get()->result());
+    // }
+    // public function kotaAll()
+    // {
+    //     header('Content-type: application/json');
+
+    //     $this->db->select('*');
+    //     $this->db->from('m_wilayah');
+
+    //     $data = $this->db->order_by('nama', 'asc');
+    //     echo json_encode($data->get()->result());
+    // }
+
+    // // public function kecamatan()
+    // // {
+    // //     header('Content-type: application/json');
+    // //     $parent_id = $_GET['kotaId'];
+    // //     $this->db->select('*');
+    // //     $this->db->from('m_wilayah');
+    // //     $this->db->where('parent_id', $parent_id);
+    // //     $this->db->where('id <>', 0);
+    // //     if ($this->input->get('q')) {
+    // //         $this->db->where("nama LIKE '%" . $this->input->get('q') . "%'");
+    // //     }
+    // //     $data = $this->db->order_by('nama', 'asc');
+    // //     echo json_encode($data->get()->result());
+    // // }
+
+    // public function kelurahan()
+    // {
+    //     header('Content-type: application/json');
+    //     $parent_id = $_GET['kecamatanId'];
+    //     $this->db->select('*');
+    //     $this->db->from('m_wilayah');
+    //     $this->db->where('parent_id', $parent_id);
+    //     $this->db->where('id <>', 0);
+    //     if ($this->input->get('q')) {
+    //         $this->db->where("nama LIKE '%" . $this->input->get('q') . "%'");
+    //     }
+    //     $data = $this->db->order_by('nama', 'asc');
+    //     echo json_encode($data->get()->result());
+    // }
+
+    // public function kodepos()
+    // {
+    //     header('Content-type: application/json');
+    //     $parent_id = $_GET['kecamatanId'];
+    //     $this->db->select('*');
+    //     $this->db->from('m_wilayah');
+    //     $this->db->limit(1);
+    //     $this->db->where('parent_id', $parent_id);
+    //     $this->db->where('id <>', 0);
+    //     if ($this->input->get('q')) {
+    //         $this->db->where("nama LIKE '%" . $this->input->get('q') . "%'");
+    //     }
+    //     $data = $this->db->order_by('kodepos', 'asc');
+    //     echo json_encode($data->get()->result());
+    // }
+
+    // public function search()
+    // {
+    //     header('Content-type: application/json');
+    //     $parent_id = $_GET['id'];
+    //     $this->db->select('*');
+    //     $this->db->from('m_wilayah');
+    //     $this->db->where('id', $parent_id);
+    //     $this->db->where('id <>', 0);
+    //     $data = $this->db->order_by('nama', 'asc');
+    //     echo json_encode($data->get()->result());
+    // }
+
+}

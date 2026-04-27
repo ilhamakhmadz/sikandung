@@ -1,0 +1,68 @@
+                                <div class="col-md-12">
+                                    <div class="hr-line-dashed"></div>
+                                    <div class="form-group">
+                                        <div class="row">
+                                            <label class="col-lg-2 text-right">Jenis Perijinan/Sertifikat</label>
+                                            <div class="col-lg-3">
+                                                <select name="jenis_perijinan" class="form-control" id="jenis_perijinan">
+                                                    <option value="">-Jenis perijinan-</option>
+                                                    <?php
+                                                        foreach($perijinan as $perijinan){
+                                                            echo '<option value="'.$perijinan->tangkap_perijinan_uraian_id.'">'.$perijinan->tangkap_perijinan_uraian_ket.'</option>';
+                                                        }
+                                                    ?>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- ORD GROUP-->
+                                    <div id="ord_group">
+                                        <div class="form-group">
+                                            <div class="row">
+                                                <label class="col-lg-2 text-right">Nomor Perijinan/Sertifikat</label>
+                                                <div class="col-lg-10">
+                                                    <div class="row">
+                                                        <div class="col-lg-6">
+                                                            <input type="text" name="no_perijinan" id="no_perijinan"  class="form-control" >
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="row">
+                                                <label class="col-lg-2 text-right">Tanggal Perijinan/Sertifikat</label>
+                                                <div class="col-lg-10">
+                                                    <input type="date" name="tgl_perijinan" id="tgl_perijinan"  class="form-control" >
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="row">
+                                                <div class="col-lg-12 text-right">
+                                                    <a onclick="tambahPerijinan()" class="btn btn-success">
+                                                    <i class="fa fa-plus"></i> Tambahkan
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                    <!-- / END ORD GROUP-->
+                                    <!-- tabel perijinan-->
+                                    <div class="col-lg-12">
+                                        <table class="table table-hover table-striped" id="table-perijinan">
+                                            <thead>
+                                                <tr>
+                                                    <th>Jenis Perijinan/Sertifikat</th>
+                                                    <th>No Perijinan/Sertifikat</th>
+                                                    <th>Tanggal Perijinan/Sertifikat</th>
+                                                    <th></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
