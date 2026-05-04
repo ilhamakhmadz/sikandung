@@ -23,8 +23,8 @@ $error_message = messages();
 
         <!-- DARK MODE BUTTON -->
         <div class="flex justify-end mb-4">
-            <button type="button" onclick="toggleDark()" class="text-sm text-gray-500 dark:text-gray-300">
-                🌙 Mode
+            <button type="button" onclick="toggleDark()" class="text-sm text-gray-500 dark:text-gray-300 flex items-center gap-1">
+                <i class="fa fa-moon-o"></i> Mode
             </button>
         </div>
 
@@ -63,7 +63,7 @@ $error_message = messages();
                         <input type="password" name="password" id="password"
                             class="w-full outline-none text-sm bg-transparent dark:text-white"
                             placeholder="Masukkan password" required>
-                        <button type="button" onclick="togglePassword()" class="text-gray-500 dark:text-gray-300">👁️</button>
+                        <button type="button" onclick="togglePassword()" class="text-gray-500 dark:text-gray-300"><i class="fa fa-eye" id="eyeIcon"></i></button>
                     </div>
                 </div>
 

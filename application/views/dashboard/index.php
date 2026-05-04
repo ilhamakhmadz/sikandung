@@ -420,8 +420,10 @@ tailwind.config = {
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // SECTOR CHART (Bar)
-    const ctx = document.getElementById('sectorChart').getContext('2d');
-    new Chart(ctx, {
+    const sectorChartEl = document.getElementById('sectorChart');
+    if (sectorChartEl) {
+        const ctx = sectorChartEl.getContext('2d');
+        new Chart(ctx, {
         type: 'bar',
         data: {
             labels: ['Pembenihan', 'Pembesaran', 'Ikan Hias', 'Mina Padi', 'Tangkap', 'Pengolahan'],
@@ -464,11 +466,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         }
-    });
+        });
+    }
 
     // PRODUCTION PIE
-    const ctx2 = document.getElementById('productionPie').getContext('2d');
-    new Chart(ctx2, {
+    const productionPieEl = document.getElementById('productionPie');
+    if (productionPieEl) {
+        const ctx2 = productionPieEl.getContext('2d');
+        new Chart(ctx2, {
         type: 'doughnut',
         data: {
             labels: ['Pembenihan', 'Pembesaran', 'Ikan Hias', 'Mina Padi', 'Tangkap'],
@@ -502,7 +507,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         }
-    });
+        });
+    }
 
     // TABLE SEARCH
     document.getElementById('tableSearch').addEventListener('keyup', function() {

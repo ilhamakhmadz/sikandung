@@ -8,6 +8,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link href="<?php echo bower_url('font-awesome/css/font-awesome.min.css') ?>" rel="stylesheet">
 
 <script>
 tailwind.config = {
@@ -39,7 +40,20 @@ body {
 // SHOW PASSWORD
 function togglePassword() {
     const input = document.getElementById("password");
-    input.type = input.type === "password" ? "text" : "password";
+    const icon = document.getElementById("eyeIcon");
+    if (input.type === "password") {
+        input.type = "text";
+        if (icon) {
+            icon.classList.remove("fa-eye");
+            icon.classList.add("fa-eye-slash");
+        }
+    } else {
+        input.type = "password";
+        if (icon) {
+            icon.classList.remove("fa-eye-slash");
+            icon.classList.add("fa-eye");
+        }
+    }
 }
 
 // DARK MODE

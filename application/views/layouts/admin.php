@@ -9,6 +9,33 @@
     <?php echo $template['metas']; ?>
 
 
+    <style>
+        /* Sidebar Submenu Visibility Fix */
+        .metismenu .nav-second-level.collapse.in,
+        .metismenu .nav-third-level.collapse.in {
+            display: block !important;
+            height: auto !important;
+            visibility: visible !important;
+        }
+        .metismenu li.active > .nav-second-level.collapse,
+        .metismenu li.active > .nav-third-level.collapse {
+            display: block !important;
+            height: auto !important;
+        }
+        .metismenu .nav-second-level li a {
+            padding: 7px 15px 7px 52px !important;
+            color: #a7b1c2 !important;
+            display: block !important;
+        }
+        .metismenu .nav-second-level li.active a, 
+        .metismenu .nav-second-level li a:hover {
+            color: #ffffff !important;
+            background-color: #293846 !important;
+        }
+        .metismenu .nav-third-level li a {
+            padding-left: 62px !important;
+        }
+    </style>
     <title><?php echo $template['title']; ?></title>
 
     <link href="<?php echo css_url('bootstrap.min.css') ?>" rel="stylesheet">
@@ -33,6 +60,18 @@
 
     <?php echo $template['css']; ?>
     <?php echo $template['js_header']; ?>
+    <style>
+        .metismenu .nav-second-level li a {
+            color: #a7b1c2 !important;
+        }
+        .metismenu .nav-second-level li.active a {
+            color: #ffffff !important;
+        }
+        .metismenu .nav-second-level li a:hover {
+            color: #ffffff !important;
+            background-color: #293846 !important;
+        }
+    </style>
 </head>
 
 <body>
@@ -101,7 +140,7 @@
                         $is_allowed = (isset($nav_lvl_1['is_allowed']) && $nav_lvl_1['is_allowed']);
                     ?>
                     <?php if ($is_allowed): ?>
-                    <li class=" <?= ($is_active ? 'active' : ' ') ?>">
+                    <li class="<?= ($is_active ? 'active' : '') ?>">
                         <?php $has_children = isset($nav_lvl_1['children']) && is_array($nav_lvl_1['children']); ?>
                             <a href="<?php echo (isset($nav_lvl_1['uri']) ? site_url($nav_lvl_1['uri']) : '#') ?>"<?php if (isset($nav_lvl_1['target'])): ?> target="<?php echo $nav_lvl_1['target'] ?>"<?php endif; ?>>
                                 <i class="<?php echo $nav_lvl_1['icon'] ?>"></i>
@@ -111,25 +150,25 @@
 
                             <?php if ($has_children): ?>
 
-                            <ul class="nav nav-second-level collapse">
+                            <ul class="nav nav-second-level collapse <?= ($is_active ? 'in' : '') ?>">
                             <?php foreach($nav_lvl_1['children'] as $nav_lvl_2): 
                                 $is_active2 = (isset($nav_lvl_2['is_active']) && $nav_lvl_2['is_active']);
                                 $is_allowed2 = (isset($nav_lvl_2['is_allowed']) && $nav_lvl_2['is_allowed']);?>
                                 <?php if ($is_allowed2): ?>
 
-                                <li class="<?= ($is_active2 ? 'active' : ' ') ?>">
+                                <li class="<?= ($is_active2 ? 'active' : '') ?>">
                                     <?php $has_children_2 = isset($nav_lvl_2['children']) && is_array($nav_lvl_2['children']); ?>
                                     <a href="<?php echo (isset($nav_lvl_2['uri']) ? site_url($nav_lvl_2['uri']) : '#') ?>"<?php if (isset($nav_lvl_2['target'])): ?> target="<?php echo $nav_lvl_2['target'] ?>"<?php endif; ?>>
                                         <?php echo $nav_lvl_2['title'] ?>
                                         <?php if ($has_children_2): ?><span class="fa arrow"></span><?php endif; ?>
                                     </a>
                                         <?php if ($has_children_2): ?>
-                                        <ul class="nav nav-third-level">
+                                        <ul class="nav nav-third-level collapse <?= ($is_active2 ? 'in' : '') ?>">
                                             <?php foreach ($nav_lvl_2['children'] as $nav_lvl_3): 
                                                 $is_active3 = (isset($nav_lvl_3['is_active']) && $nav_lvl_3['is_active']);
                                                 $is_allowed3 = (isset($nav_lvl_3['is_allowed']) && $nav_lvl_3['is_allowed']);?>
                                                 <?php if ($is_allowed3): ?>
-                                                    <li class="<?= ($is_active3 ? 'active' : ' ') ?>">
+                                                    <li class="<?= ($is_active3 ? 'active' : '') ?>">
                                                         <a href="<?php echo (isset($nav_lvl_3['uri']) ? site_url($nav_lvl_3['uri']) : '#') ?>"<?php if (isset($nav_lvl_3['target'])): ?> target="<?php echo $nav_lvl_3['target'] ?>"<?php endif; ?>>
                                                             <?php echo $nav_lvl_3['title'] ?>
                                                         </a>
@@ -330,43 +369,45 @@
             var data2 = [
                 [0,1],[1,0],[2,2],[3,0],[4,1],[5,3],[6,1],[7,5],[8,2],[9,3],[10,2],[11,1],[12,0],[13,2],[14,8],[15,0],[16,0]
             ];
-            $("#flot-dashboard-chart").length && $.plot($("#flot-dashboard-chart"), [
-                data1, data2
-            ],
-                    {
-                        series: {
-                            lines: {
-                                show: false,
-                                fill: true
+            if ($("#flot-dashboard-chart").length) {
+                $.plot($("#flot-dashboard-chart"), [
+                    data1, data2
+                ],
+                        {
+                            series: {
+                                lines: {
+                                    show: false,
+                                    fill: true
+                                },
+                                splines: {
+                                    show: true,
+                                    tension: 0.4,
+                                    lineWidth: 1,
+                                    fill: 0.4
+                                },
+                                points: {
+                                    radius: 0,
+                                    show: true
+                                },
+                                shadowSize: 2
                             },
-                            splines: {
-                                show: true,
-                                tension: 0.4,
-                                lineWidth: 1,
-                                fill: 0.4
+                            grid: {
+                                hoverable: true,
+                                clickable: true,
+                                tickColor: "#d5d5d5",
+                                borderWidth: 1,
+                                color: '#d5d5d5'
                             },
-                            points: {
-                                radius: 0,
-                                show: true
+                            colors: ["#1ab394", "#1C84C6"],
+                            xaxis:{
                             },
-                            shadowSize: 2
-                        },
-                        grid: {
-                            hoverable: true,
-                            clickable: true,
-                            tickColor: "#d5d5d5",
-                            borderWidth: 1,
-                            color: '#d5d5d5'
-                        },
-                        colors: ["#1ab394", "#1C84C6"],
-                        xaxis:{
-                        },
-                        yaxis: {
-                            ticks: 4
-                        },
-                        tooltip: false
-                    }
-            );
+                            yaxis: {
+                                ticks: 4
+                            },
+                            tooltip: false
+                        }
+                );
+            }
 
             var doughnutData = {
                 labels: ["App","Software","Laptop" ],
@@ -385,8 +426,10 @@
             };
 
 
-            var ctx4 = document.getElementById("doughnutChart").getContext("2d");
-            new Chart(ctx4, {type: 'doughnut', data: doughnutData, options:doughnutOptions});
+            if ($("#doughnutChart").length) {
+                var ctx4 = document.getElementById("doughnutChart").getContext("2d");
+                new Chart(ctx4, {type: 'doughnut', data: doughnutData, options:doughnutOptions});
+            }
 
             var doughnutData = {
                 labels: ["App","Software","Laptop" ],
@@ -405,8 +448,10 @@
             };
 
 
-            var ctx4 = document.getElementById("doughnutChart2").getContext("2d");
-            new Chart(ctx4, {type: 'doughnut', data: doughnutData, options:doughnutOptions});
+            if ($("#doughnutChart2").length) {
+                var ctx4 = document.getElementById("doughnutChart2").getContext("2d");
+                new Chart(ctx4, {type: 'doughnut', data: doughnutData, options:doughnutOptions});
+            }
 
         });
 
