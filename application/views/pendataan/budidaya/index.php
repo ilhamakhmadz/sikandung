@@ -55,6 +55,37 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- MODAL EXPORT -->
+                            <div class="modal inmodal" id="myModalExport" role="dialog" aria-hidden="true">
+                                <div class="modal-dialog modal-sm">
+                                    <div class="modal-content animated flipInY">
+                                        <div class="modal-header" style="padding: 15px;">
+                                            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                                            <h4 class="modal-title" style="font-size: 16px;"><i class="fa fa-file-excel-o text-success"></i> Export Data Budidaya</h4>
+                                        </div>
+                                        <form method="get" action="<?= site_url('pendataan/budidaya/export') ?>" target="_blank">
+                                        <div class="modal-body">
+                                            <div class="form-group" style="margin-bottom: 0;">
+                                                <label class="control-label" style="text-align: left; display: block; margin-bottom: 8px; font-weight: bold;">Pilih Tahun Kuisioner:</label>
+                                                <select name="tahun" id="export_tahun" class="form-control">
+                                                    <option value="0">-- Semua Tahun --</option>
+                                                    <?php if (!empty($list_tahun)): ?>
+                                                        <?php foreach($list_tahun as $thn): ?>
+                                                            <option value="<?= $thn ?>" <?= ($thn == date('Y')) ? 'selected' : '' ?>><?= $thn ?></option>
+                                                        <?php endforeach; ?>
+                                                    <?php endif; ?>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-white" data-dismiss="modal">Tutup</button>
+                                            <button type="submit" class="btn btn-success"><i class="fa fa-download"></i> Download</button>
+                                        </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
 <?php $this->load->view('delete-modal'); ?>
 <style>
     .select2-container--open {

@@ -352,5 +352,250 @@ class Pengolahan_model extends MY_Model {
       
       return $updated;
     }
-   
+
+    public function get_list_tahun()
+    {
+        $this->db->distinct();
+        $this->db->select('tahun');
+        $this->db->from($this->table);
+        $this->db->where('visible', 1);
+        $this->db->where('tahun IS NOT NULL');
+        $this->db->where('tahun >', 2000);
+        $this->db->order_by('tahun', 'DESC');
+        $results = $this->db->get()->result();
+
+        $years = [];
+        foreach ($results as $r) {
+            if (!empty($r->tahun) && !in_array((int)$r->tahun, $years)) {
+                $years[] = (int)$r->tahun;
+            }
+        }
+        $currentYear = (int)date('Y');
+        if (!in_array($currentYear, $years)) {
+            array_unshift($years, $currentYear);
+        }
+        rsort($years);
+        return $years;
+    }
+
+    public function get_export_data($userId = null, $roleId = null, $tahun = null)
+    {
+        $this->db->select('
+            p.pengolahan_id,
+            p.tahun,
+            p.tanggal_kuesioner,
+            p.nama_responden,
+            p.petugas_enumerator,
+            p.submit,
+            pi.nik,
+            pi.nama,
+            pi.nama_kelompok,
+            pi.jabatan,
+            pi.alamat_jalan,
+            pi.telepon,
+            mk.Nama_Kecamatan,
+            md.Nama_Desa,
+            pk.jenis_perusahaan,
+            pk.kegiatan_usaha,
+            pk.jenis_olahan,
+            pk.frekuensi_produksi_peminggu,
+            pk.mulai_berproduksi,
+            pk.luas_bangunan_keseluruhan,
+            pk.luas_bangunan_produksi,
+            pk.permodalan,
+            pk.perijinan_usaha
+        ');
+        $this->db->from('pengolahan p');
+        $this->db->join('pengolahan_identitas pi', 'pi.pengolahan_id = p.pengolahan_id', 'left');
+        $this->db->join('pengolahan_ket_umum pk', 'pk.pengolahan_id = p.pengolahan_id', 'left');
+        $this->db->join('master_kecamatan mk', 'mk.Kd_Kec = pi.kd_kec', 'left');
+        $this->db->join('master_desa md', 'md.Kd_Desa = pi.kd_desa AND md.Kd_Kec = pi.kd_kec', 'left');
+        $this->db->where('p.visible', 1);
+
+        if ($roleId == 5 || $roleId == 9) {
+            $this->db->where('p.user_id', $userId);
+        }
+
+        if (!empty($tahun) && $tahun != '0' && $tahun != 'all') {
+            $tahunInt = (int)$tahun;
+            $this->db->group_start();
+            $this->db->where('p.tahun', $tahunInt);
+            $this->db->or_where('YEAR(p.tanggal_kuesioner)', $tahunInt);
+            $this->db->group_end();
+        }
+
+        $this->db->order_by('p.tanggal_kuesioner', 'desc');
+        return $this->db->get()->result();
+    }
+
+    public function get_export_alat_produksi($userId = null, $roleId = null, $tahun = null)
+    {
+        $this->db->select('
+            p.pengolahan_id, p.tahun, p.tanggal_kuesioner, pi.nik, pi.nama, pi.nama_kelompok,
+            mk.Nama_Kecamatan, md.Nama_Desa,
+            pau.pengolahan_alat_produksi_uraian_ket as uraian,
+            ap.pengolahan_alat_produksi_volume as volume,
+            ap.pengolahan_alat_produksi_harga as harga,
+            ap.pengolahan_alat_produksi_nilai as nilai
+        ');
+        $this->db->from('pengolahan_alat_produksi ap');
+        $this->db->join('pengolahan p', 'p.pengolahan_id = ap.pengolahan_id');
+        $this->db->join('pengolahan_identitas pi', 'pi.pengolahan_id = p.pengolahan_id', 'left');
+        $this->db->join('master_kecamatan mk', 'mk.Kd_Kec = pi.kd_kec', 'left');
+        $this->db->join('master_desa md', 'md.Kd_Desa = pi.kd_desa AND md.Kd_Kec = pi.kd_kec', 'left');
+        $this->db->join('pengolahan_alat_produksi_uraian pau', 'pau.pengolahan_alat_produksi_uraian_id = ap.pengolahan_alat_produksi_uraian_id', 'left');
+        $this->db->where('p.visible', 1);
+
+        if ($roleId == 5 || $roleId == 9) {
+            $this->db->where('p.user_id', $userId);
+        }
+
+        if (!empty($tahun) && $tahun != '0' && $tahun != 'all') {
+            $tahunInt = (int)$tahun;
+            $this->db->group_start();
+            $this->db->where('p.tahun', $tahunInt);
+            $this->db->or_where('YEAR(p.tanggal_kuesioner)', $tahunInt);
+            $this->db->group_end();
+        }
+
+        $this->db->order_by('p.tanggal_kuesioner', 'desc');
+        return $this->db->get()->result();
+    }
+
+    public function get_export_bahan_utama($userId = null, $roleId = null, $tahun = null)
+    {
+        $this->db->select('
+            p.pengolahan_id, p.tahun, p.tanggal_kuesioner, pi.nik, pi.nama, pi.nama_kelompok,
+            mk.Nama_Kecamatan, md.Nama_Desa,
+            pbu.pengolahan_bahan_utama_uraian_ket as uraian,
+            bu.pengolahan_bahan_utama_asal as asal,
+            bu.pengolahan_bahan_utama_volume as volume,
+            bu.pengolahan_bahan_utama_harga as harga,
+            bu.pengolahan_bahan_utama_nilai as nilai
+        ');
+        $this->db->from('pengolahan_bahan_utama bu');
+        $this->db->join('pengolahan p', 'p.pengolahan_id = bu.pengolahan_id');
+        $this->db->join('pengolahan_identitas pi', 'pi.pengolahan_id = p.pengolahan_id', 'left');
+        $this->db->join('master_kecamatan mk', 'mk.Kd_Kec = pi.kd_kec', 'left');
+        $this->db->join('master_desa md', 'md.Kd_Desa = pi.kd_desa AND md.Kd_Kec = pi.kd_kec', 'left');
+        $this->db->join('pengolahan_bahan_utama_uraian pbu', 'pbu.pengolahan_bahan_utama_uraian_id = bu.pengolahan_bahan_utama_uraian_id', 'left');
+        $this->db->where('p.visible', 1);
+
+        if ($roleId == 5 || $roleId == 9) {
+            $this->db->where('p.user_id', $userId);
+        }
+
+        if (!empty($tahun) && $tahun != '0' && $tahun != 'all') {
+            $tahunInt = (int)$tahun;
+            $this->db->group_start();
+            $this->db->where('p.tahun', $tahunInt);
+            $this->db->or_where('YEAR(p.tanggal_kuesioner)', $tahunInt);
+            $this->db->group_end();
+        }
+
+        $this->db->order_by('p.tanggal_kuesioner', 'desc');
+        return $this->db->get()->result();
+    }
+
+    public function get_export_bahan_lain($userId = null, $roleId = null, $tahun = null)
+    {
+        $this->db->select('
+            p.pengolahan_id, p.tahun, p.tanggal_kuesioner, pi.nik, pi.nama, pi.nama_kelompok,
+            mk.Nama_Kecamatan, md.Nama_Desa,
+            pblu.pengolahan_bahan_lain_uraian_ket as uraian,
+            bl.pengolahan_bahan_lain_volume as volume,
+            bl.pengolahan_bahan_lain_harga as harga,
+            bl.pengolahan_bahan_lain_nilai as nilai
+        ');
+        $this->db->from('pengolahan_bahan_lain bl');
+        $this->db->join('pengolahan p', 'p.pengolahan_id = bl.pengolahan_id');
+        $this->db->join('pengolahan_identitas pi', 'pi.pengolahan_id = p.pengolahan_id', 'left');
+        $this->db->join('master_kecamatan mk', 'mk.Kd_Kec = pi.kd_kec', 'left');
+        $this->db->join('master_desa md', 'md.Kd_Desa = pi.kd_desa AND md.Kd_Kec = pi.kd_kec', 'left');
+        $this->db->join('pengolahan_bahan_lain_uraian pblu', 'pblu.pengolahan_bahan_lain_uraian_id = bl.pengolahan_bahan_lain_uraian_id', 'left');
+        $this->db->where('p.visible', 1);
+
+        if ($roleId == 5 || $roleId == 9) {
+            $this->db->where('p.user_id', $userId);
+        }
+
+        if (!empty($tahun) && $tahun != '0' && $tahun != 'all') {
+            $tahunInt = (int)$tahun;
+            $this->db->group_start();
+            $this->db->where('p.tahun', $tahunInt);
+            $this->db->or_where('YEAR(p.tanggal_kuesioner)', $tahunInt);
+            $this->db->group_end();
+        }
+
+        $this->db->order_by('p.tanggal_kuesioner', 'desc');
+        return $this->db->get()->result();
+    }
+
+    public function get_export_nilai_produksi($userId = null, $roleId = null, $tahun = null)
+    {
+        $this->db->select('
+            p.pengolahan_id, p.tahun, p.tanggal_kuesioner, pi.nik, pi.nama, pi.nama_kelompok,
+            mk.Nama_Kecamatan, md.Nama_Desa,
+            pnu.pengolahan_nilai_produksi_uraian_ket as uraian,
+            np.pengolahan_nilai_lokasi_pemasaran as lokasi_pemasaran,
+            np.pengolahan_nilai_produksi_volume as volume,
+            np.pengolahan_nilai_produksi_harga as harga,
+            np.pengolahan_nilai_produksi_nilai as nilai
+        ');
+        $this->db->from('pengolahan_nilai_produksi np');
+        $this->db->join('pengolahan p', 'p.pengolahan_id = np.pengolahan_id');
+        $this->db->join('pengolahan_identitas pi', 'pi.pengolahan_id = p.pengolahan_id', 'left');
+        $this->db->join('master_kecamatan mk', 'mk.Kd_Kec = pi.kd_kec', 'left');
+        $this->db->join('master_desa md', 'md.Kd_Desa = pi.kd_desa AND md.Kd_Kec = pi.kd_kec', 'left');
+        $this->db->join('pengolahan_nilai_produksi_uraian pnu', 'pnu.pengolahan_nilai_produksi_uraian_id = np.pengolahan_nilai_produksi_uraian_id', 'left');
+        $this->db->where('p.visible', 1);
+
+        if ($roleId == 5 || $roleId == 9) {
+            $this->db->where('p.user_id', $userId);
+        }
+
+        if (!empty($tahun) && $tahun != '0' && $tahun != 'all') {
+            $tahunInt = (int)$tahun;
+            $this->db->group_start();
+            $this->db->where('p.tahun', $tahunInt);
+            $this->db->or_where('YEAR(p.tanggal_kuesioner)', $tahunInt);
+            $this->db->group_end();
+        }
+
+        $this->db->order_by('p.tanggal_kuesioner', 'desc');
+        return $this->db->get()->result();
+    }
+
+    public function get_export_perijinan($userId = null, $roleId = null, $tahun = null)
+    {
+        $this->db->select('
+            p.pengolahan_id, p.tahun, p.tanggal_kuesioner, pi.nik, pi.nama, pi.nama_kelompok,
+            mk.Nama_Kecamatan, md.Nama_Desa,
+            ppu.pengolahan_perijinan_uraian_ket as jenis_perijinan,
+            pj.pengolahan_perijinan_no as no_perijinan,
+            pj.pengolahan_perijinan_tgl as tgl_perijinan
+        ');
+        $this->db->from('pengolahan_perijinan pj');
+        $this->db->join('pengolahan p', 'p.pengolahan_id = pj.pengolahan_id');
+        $this->db->join('pengolahan_identitas pi', 'pi.pengolahan_id = p.pengolahan_id', 'left');
+        $this->db->join('master_kecamatan mk', 'mk.Kd_Kec = pi.kd_kec', 'left');
+        $this->db->join('master_desa md', 'md.Kd_Desa = pi.kd_desa AND md.Kd_Kec = pi.kd_kec', 'left');
+        $this->db->join('pengolahan_perijinan_uraian ppu', 'ppu.pengolahan_perijinan_uraian_id = pj.pengolahan_perijinan_uraian_id', 'left');
+        $this->db->where('p.visible', 1);
+
+        if ($roleId == 5 || $roleId == 9) {
+            $this->db->where('p.user_id', $userId);
+        }
+
+        if (!empty($tahun) && $tahun != '0' && $tahun != 'all') {
+            $tahunInt = (int)$tahun;
+            $this->db->group_start();
+            $this->db->where('p.tahun', $tahunInt);
+            $this->db->or_where('YEAR(p.tanggal_kuesioner)', $tahunInt);
+            $this->db->group_end();
+        }
+
+        $this->db->order_by('p.tanggal_kuesioner', 'desc');
+        return $this->db->get()->result();
+    }
 }

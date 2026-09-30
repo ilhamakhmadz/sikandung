@@ -346,6 +346,221 @@ class Budidaya_model extends MY_Model {
       
       return $updated;
     }
-   
 
+    public function get_list_tahun()
+    {
+        $this->db->distinct();
+        $this->db->select('tahun');
+        $this->db->from($this->table);
+        $this->db->where('visible', 1);
+        $this->db->where('tahun IS NOT NULL');
+        $this->db->where('tahun >', 2000);
+        $this->db->order_by('tahun', 'DESC');
+        $results = $this->db->get()->result();
+
+        $years = [];
+        foreach ($results as $r) {
+            if (!empty($r->tahun) && !in_array((int)$r->tahun, $years)) {
+                $years[] = (int)$r->tahun;
+            }
+        }
+        $currentYear = (int)date('Y');
+        if (!in_array($currentYear, $years)) {
+            array_unshift($years, $currentYear);
+        }
+        rsort($years);
+        return $years;
+    }
+
+    public function get_export_data($userId = null, $roleId = null, $tahun = null)
+    {
+        $this->db->select('
+            b.budidaya_id,
+            b.tahun,
+            b.tanggal_kuesioner,
+            b.nama_responden,
+            b.petugas_enumerator,
+            b.submit,
+            bi.nik,
+            bi.nama,
+            bi.nama_kelompok,
+            bi.jabatan,
+            bi.alamat_jalan,
+            bi.telepon,
+            mk.Nama_Kecamatan,
+            md.Nama_Desa,
+            bk.kegiatan_usaha,
+            bk.jenis_perusahaan,
+            bk.frekuensi_panen_setahun,
+            bk.mulai_budidaya,
+            bk.luas_kolam_m2,
+            bk.status_kolam,
+            bk.permodalan,
+            bk.perijinan_usaha
+        ');
+        $this->db->from('budidaya b');
+        $this->db->join('budidaya_identitas bi', 'bi.budidaya_id = b.budidaya_id', 'left');
+        $this->db->join('budidaya_ket_umum bk', 'bk.budidaya_id = b.budidaya_id', 'left');
+        $this->db->join('master_kecamatan mk', 'mk.Kd_Kec = bi.kd_kec', 'left');
+        $this->db->join('master_desa md', 'md.Kd_Desa = bi.kd_desa AND md.Kd_Kec = bi.kd_kec', 'left');
+        $this->db->where('b.visible', 1);
+
+        if ($roleId == 5 || $roleId == 9) {
+            $this->db->where('b.user_id', $userId);
+        }
+
+        if (!empty($tahun) && $tahun != '0' && $tahun != 'all') {
+            $tahunInt = (int)$tahun;
+            $this->db->group_start();
+            $this->db->where('b.tahun', $tahunInt);
+            $this->db->or_where('YEAR(b.tanggal_kuesioner)', $tahunInt);
+            $this->db->group_end();
+        }
+
+        $this->db->order_by('b.tanggal_kuesioner', 'desc');
+        return $this->db->get()->result();
+    }
+
+    public function get_export_nilai_produksi($userId = null, $roleId = null, $tahun = null)
+    {
+        $this->db->select('
+            b.budidaya_id, b.tahun, b.tanggal_kuesioner, bi.nik, bi.nama, bi.nama_kelompok,
+            mk.Nama_Kecamatan, md.Nama_Desa,
+            npu.budidaya_nilai_produksi_uraian_ket as uraian,
+            bj.budidaya_jenis_nama as jenis,
+            bk.budidaya_kategori_nama as kategori,
+            np.budidaya_nilai_produksi_volume as volume,
+            np.budidaya_nilai_produksi_harga as harga,
+            np.budidaya_nilai_produksi_nilai as nilai
+        ');
+        $this->db->from('budidaya_nilai_produksi np');
+        $this->db->join('budidaya b', 'b.budidaya_id = np.budidaya_id');
+        $this->db->join('budidaya_identitas bi', 'bi.budidaya_id = b.budidaya_id', 'left');
+        $this->db->join('master_kecamatan mk', 'mk.Kd_Kec = bi.kd_kec', 'left');
+        $this->db->join('master_desa md', 'md.Kd_Desa = bi.kd_desa AND md.Kd_Kec = bi.kd_kec', 'left');
+        $this->db->join('budidaya_nilai_produksi_uraian npu', 'npu.budidaya_nilai_produksi_uraian_id = np.budidaya_nilai_produksi_uraian_id', 'left');
+        $this->db->join('budidaya_jenis bj', 'bj.budidaya_jenis_id = np.budidaya_jenis_id', 'left');
+        $this->db->join('budidaya_kategori bk', 'bk.budidaya_kategori_id = bj.budidaya_kategori_id', 'left');
+        $this->db->where('b.visible', 1);
+
+        if ($roleId == 5 || $roleId == 9) {
+            $this->db->where('b.user_id', $userId);
+        }
+
+        if (!empty($tahun) && $tahun != '0' && $tahun != 'all') {
+            $tahunInt = (int)$tahun;
+            $this->db->group_start();
+            $this->db->where('b.tahun', $tahunInt);
+            $this->db->or_where('YEAR(b.tanggal_kuesioner)', $tahunInt);
+            $this->db->group_end();
+        }
+
+        $this->db->order_by('b.tanggal_kuesioner', 'desc');
+        return $this->db->get()->result();
+    }
+
+    public function get_export_biaya_produksi($userId = null, $roleId = null, $tahun = null)
+    {
+        $this->db->select('
+            b.budidaya_id, b.tahun, b.tanggal_kuesioner, bi.nik, bi.nama, bi.nama_kelompok,
+            mk.Nama_Kecamatan, md.Nama_Desa,
+            bpu.budidaya_biaya_produksi_uraian_ket as uraian,
+            bj.budidaya_jenis_nama as jenis,
+            bk.budidaya_kategori_nama as kategori,
+            bp.budidaya_biaya_produksi_volume as volume,
+            bp.budidaya_biaya_produksi_harga as harga,
+            bp.budidaya_biaya_produksi_nilai as nilai
+        ');
+        $this->db->from('budidaya_biaya_produksi bp');
+        $this->db->join('budidaya b', 'b.budidaya_id = bp.budidaya_id');
+        $this->db->join('budidaya_identitas bi', 'bi.budidaya_id = b.budidaya_id', 'left');
+        $this->db->join('master_kecamatan mk', 'mk.Kd_Kec = bi.kd_kec', 'left');
+        $this->db->join('master_desa md', 'md.Kd_Desa = bi.kd_desa AND md.Kd_Kec = bi.kd_kec', 'left');
+        $this->db->join('budidaya_biaya_produksi_uraian bpu', 'bpu.budidaya_biaya_produksi_uraian_id = bp.budidaya_biaya_produksi_uraian_id', 'left');
+        $this->db->join('budidaya_jenis bj', 'bj.budidaya_jenis_id = bp.budidaya_jenis_id', 'left');
+        $this->db->join('budidaya_kategori bk', 'bk.budidaya_kategori_id = bj.budidaya_kategori_id', 'left');
+        $this->db->where('b.visible', 1);
+
+        if ($roleId == 5 || $roleId == 9) {
+            $this->db->where('b.user_id', $userId);
+        }
+
+        if (!empty($tahun) && $tahun != '0' && $tahun != 'all') {
+            $tahunInt = (int)$tahun;
+            $this->db->group_start();
+            $this->db->where('b.tahun', $tahunInt);
+            $this->db->or_where('YEAR(b.tanggal_kuesioner)', $tahunInt);
+            $this->db->group_end();
+        }
+
+        $this->db->order_by('b.tanggal_kuesioner', 'desc');
+        return $this->db->get()->result();
+    }
+
+    public function get_export_bahan_lain($userId = null, $roleId = null, $tahun = null)
+    {
+        $this->db->select('
+            b.budidaya_id, b.tahun, b.tanggal_kuesioner, bi.nik, bi.nama, bi.nama_kelompok,
+            mk.Nama_Kecamatan, md.Nama_Desa,
+            blu.budidaya_bahan_lain_uraian_ket as uraian,
+            bl.budidaya_bahan_lain_volume as volume,
+            bl.budidaya_bahan_lain_harga as harga,
+            bl.budidaya_bahan_lain_nilai as nilai
+        ');
+        $this->db->from('budidaya_bahan_lain bl');
+        $this->db->join('budidaya b', 'b.budidaya_id = bl.budidaya_id');
+        $this->db->join('budidaya_identitas bi', 'bi.budidaya_id = b.budidaya_id', 'left');
+        $this->db->join('master_kecamatan mk', 'mk.Kd_Kec = bi.kd_kec', 'left');
+        $this->db->join('master_desa md', 'md.Kd_Desa = bi.kd_desa AND md.Kd_Kec = bi.kd_kec', 'left');
+        $this->db->join('budidaya_bahan_lain_uraian blu', 'blu.budidaya_bahan_lain_uraian_id = bl.budidaya_bahan_lain_uraian_id', 'left');
+        $this->db->where('b.visible', 1);
+
+        if ($roleId == 5 || $roleId == 9) {
+            $this->db->where('b.user_id', $userId);
+        }
+
+        if (!empty($tahun) && $tahun != '0' && $tahun != 'all') {
+            $tahunInt = (int)$tahun;
+            $this->db->group_start();
+            $this->db->where('b.tahun', $tahunInt);
+            $this->db->or_where('YEAR(b.tanggal_kuesioner)', $tahunInt);
+            $this->db->group_end();
+        }
+
+        $this->db->order_by('b.tanggal_kuesioner', 'desc');
+        return $this->db->get()->result();
+    }
+
+    public function get_export_perijinan($userId = null, $roleId = null, $tahun = null)
+    {
+        $this->db->select('
+            b.budidaya_id, b.tahun, b.tanggal_kuesioner, bi.nik, bi.nama, bi.nama_kelompok,
+            mk.Nama_Kecamatan, md.Nama_Desa,
+            pu.budidaya_perijinan_uraian_ket as jenis_perijinan,
+            p.budidaya_perijinan_no as no_perijinan,
+            p.budidaya_perijinan_tgl as tgl_perijinan
+        ');
+        $this->db->from('budidaya_perijinan p');
+        $this->db->join('budidaya b', 'b.budidaya_id = p.budidaya_id');
+        $this->db->join('budidaya_identitas bi', 'bi.budidaya_id = b.budidaya_id', 'left');
+        $this->db->join('master_kecamatan mk', 'mk.Kd_Kec = bi.kd_kec', 'left');
+        $this->db->join('master_desa md', 'md.Kd_Desa = bi.kd_desa AND md.Kd_Kec = bi.kd_kec', 'left');
+        $this->db->join('budidaya_perijinan_uraian pu', 'pu.budidaya_perijinan_uraian_id = p.budidaya_perijinan_uraian_id', 'left');
+        $this->db->where('b.visible', 1);
+
+        if ($roleId == 5 || $roleId == 9) {
+            $this->db->where('b.user_id', $userId);
+        }
+
+        if (!empty($tahun) && $tahun != '0' && $tahun != 'all') {
+            $tahunInt = (int)$tahun;
+            $this->db->group_start();
+            $this->db->where('b.tahun', $tahunInt);
+            $this->db->or_where('YEAR(b.tanggal_kuesioner)', $tahunInt);
+            $this->db->group_end();
+        }
+
+        $this->db->order_by('b.tanggal_kuesioner', 'desc');
+        return $this->db->get()->result();
+    }
 }

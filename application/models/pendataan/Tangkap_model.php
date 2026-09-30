@@ -334,5 +334,182 @@ class Tangkap_model extends MY_Model {
       return $updated;
     }
 
+    public function get_list_tahun()
+    {
+        $this->db->distinct();
+        $this->db->select('tahun');
+        $this->db->from($this->table);
+        $this->db->where('visible', 1);
+        $this->db->where('tahun IS NOT NULL');
+        $this->db->where('tahun >', 2000);
+        $this->db->order_by('tahun', 'DESC');
+        $results = $this->db->get()->result();
 
+        $years = [];
+        foreach ($results as $r) {
+            if (!empty($r->tahun) && !in_array((int)$r->tahun, $years)) {
+                $years[] = (int)$r->tahun;
+            }
+        }
+        $currentYear = (int)date('Y');
+        if (!in_array($currentYear, $years)) {
+            array_unshift($years, $currentYear);
+        }
+        rsort($years);
+        return $years;
+    }
+
+    public function get_export_data($userId = null, $roleId = null, $tahun = null)
+    {
+        $this->db->select('
+            t.tangkap_id,
+            t.tahun,
+            t.tanggal_kuesioner,
+            t.nama_responden,
+            t.petugas_enumerator,
+            t.submit,
+            ti.nik,
+            ti.nama,
+            ti.nama_kelompok,
+            ti.jabatan,
+            ti.alamat_jalan,
+            ti.telepon,
+            mk.Nama_Kecamatan,
+            md.Nama_Desa,
+            tk.tangkap_jenis_perairan,
+            tk.luas_pu_m2,
+            tk.pengelola_pu,
+            tk.jumlah_trip_penangkapan_sebulan
+        ');
+        $this->db->from('tangkap t');
+        $this->db->join('tangkap_identitas ti', 'ti.tangkap_id = t.tangkap_id', 'left');
+        $this->db->join('tangkap_ket_umum tk', 'tk.tangkap_id = t.tangkap_id', 'left');
+        $this->db->join('master_kecamatan mk', 'mk.Kd_Kec = ti.kd_kec', 'left');
+        $this->db->join('master_desa md', 'md.Kd_Desa = ti.kd_desa AND md.Kd_Kec = ti.kd_kec', 'left');
+        $this->db->where('t.visible', 1);
+
+        if ($roleId == 5 || $roleId == 9) {
+            $this->db->where('t.user_id', $userId);
+        }
+
+        if (!empty($tahun) && $tahun != '0' && $tahun != 'all') {
+            $tahunInt = (int)$tahun;
+            $this->db->group_start();
+            $this->db->where('t.tahun', $tahunInt);
+            $this->db->or_where('YEAR(t.tanggal_kuesioner)', $tahunInt);
+            $this->db->group_end();
+        }
+
+        $this->db->order_by('t.tanggal_kuesioner', 'desc');
+        return $this->db->get()->result();
+    }
+
+    public function get_export_biaya_produksi($userId = null, $roleId = null, $tahun = null)
+    {
+        $this->db->select('
+            t.tangkap_id, t.tahun, t.tanggal_kuesioner, ti.nik, ti.nama, ti.nama_kelompok,
+            mk.Nama_Kecamatan, md.Nama_Desa,
+            tbu.tangkap_biaya_produksi_uraian_ket as uraian,
+            tj.tangkap_jenis_nama as jenis,
+            tk.tangkap_kategori_nama as kategori,
+            bp.tangkap_biaya_produksi_volume as volume,
+            bp.tangkap_biaya_produksi_harga as harga,
+            bp.tangkap_biaya_produksi_nilai as nilai
+        ');
+        $this->db->from('tangkap_biaya_produksi bp');
+        $this->db->join('tangkap t', 't.tangkap_id = bp.tangkap_id');
+        $this->db->join('tangkap_identitas ti', 'ti.tangkap_id = t.tangkap_id', 'left');
+        $this->db->join('master_kecamatan mk', 'mk.Kd_Kec = ti.kd_kec', 'left');
+        $this->db->join('master_desa md', 'md.Kd_Desa = ti.kd_desa AND md.Kd_Kec = ti.kd_kec', 'left');
+        $this->db->join('tangkap_biaya_produksi_uraian tbu', 'tbu.tangkap_biaya_produksi_uraian_id = bp.tangkap_biaya_produksi_uraian_id', 'left');
+        $this->db->join('tangkap_jenis tj', 'tj.tangkap_jenis_id = bp.tangkap_jenis_id', 'left');
+        $this->db->join('tangkap_kategori tk', 'tk.tangkap_kategori_id = tj.tangkap_kategori_id', 'left');
+        $this->db->where('t.visible', 1);
+
+        if ($roleId == 5 || $roleId == 9) {
+            $this->db->where('t.user_id', $userId);
+        }
+
+        if (!empty($tahun) && $tahun != '0' && $tahun != 'all') {
+            $tahunInt = (int)$tahun;
+            $this->db->group_start();
+            $this->db->where('t.tahun', $tahunInt);
+            $this->db->or_where('YEAR(t.tanggal_kuesioner)', $tahunInt);
+            $this->db->group_end();
+        }
+
+        $this->db->order_by('t.tanggal_kuesioner', 'desc');
+        return $this->db->get()->result();
+    }
+
+    public function get_export_nilai_produksi($userId = null, $roleId = null, $tahun = null)
+    {
+        $this->db->select('
+            t.tangkap_id, t.tahun, t.tanggal_kuesioner, ti.nik, ti.nama, ti.nama_kelompok,
+            mk.Nama_Kecamatan, md.Nama_Desa,
+            tnu.tangkap_nilai_produksi_uraian_ket as uraian,
+            tj.tangkap_jenis_nama as jenis,
+            tk.tangkap_kategori_nama as kategori,
+            np.tangkap_nilai_produksi_volume as volume,
+            np.tangkap_nilai_produksi_harga as harga,
+            np.tangkap_nilai_produksi_nilai as nilai
+        ');
+        $this->db->from('tangkap_nilai_produksi np');
+        $this->db->join('tangkap t', 't.tangkap_id = np.tangkap_id');
+        $this->db->join('tangkap_identitas ti', 'ti.tangkap_id = t.tangkap_id', 'left');
+        $this->db->join('master_kecamatan mk', 'mk.Kd_Kec = ti.kd_kec', 'left');
+        $this->db->join('master_desa md', 'md.Kd_Desa = ti.kd_desa AND md.Kd_Kec = ti.kd_kec', 'left');
+        $this->db->join('tangkap_nilai_produksi_uraian tnu', 'tnu.tangkap_nilai_produksi_uraian_id = np.tangkap_nilai_produksi_uraian_id', 'left');
+        $this->db->join('tangkap_jenis tj', 'tj.tangkap_jenis_id = np.tangkap_jenis_id', 'left');
+        $this->db->join('tangkap_kategori tk', 'tk.tangkap_kategori_id = tj.tangkap_kategori_id', 'left');
+        $this->db->where('t.visible', 1);
+
+        if ($roleId == 5 || $roleId == 9) {
+            $this->db->where('t.user_id', $userId);
+        }
+
+        if (!empty($tahun) && $tahun != '0' && $tahun != 'all') {
+            $tahunInt = (int)$tahun;
+            $this->db->group_start();
+            $this->db->where('t.tahun', $tahunInt);
+            $this->db->or_where('YEAR(t.tanggal_kuesioner)', $tahunInt);
+            $this->db->group_end();
+        }
+
+        $this->db->order_by('t.tanggal_kuesioner', 'desc');
+        return $this->db->get()->result();
+    }
+
+    public function get_export_perijinan($userId = null, $roleId = null, $tahun = null)
+    {
+        $this->db->select('
+            t.tangkap_id, t.tahun, t.tanggal_kuesioner, ti.nik, ti.nama, ti.nama_kelompok,
+            mk.Nama_Kecamatan, md.Nama_Desa,
+            tpu.tangkap_perijinan_uraian_ket as jenis_perijinan,
+            p.tangkap_perijinan_no as no_perijinan,
+            p.tangkap_perijinan_tgl as tgl_perijinan
+        ');
+        $this->db->from('tangkap_perijinan p');
+        $this->db->join('tangkap t', 't.tangkap_id = p.tangkap_id');
+        $this->db->join('tangkap_identitas ti', 'ti.tangkap_id = t.tangkap_id', 'left');
+        $this->db->join('master_kecamatan mk', 'mk.Kd_Kec = ti.kd_kec', 'left');
+        $this->db->join('master_desa md', 'md.Kd_Desa = ti.kd_desa AND md.Kd_Kec = ti.kd_kec', 'left');
+        $this->db->join('tangkap_perijinan_uraian tpu', 'tpu.tangkap_perijinan_uraian_id = p.tangkap_perijinan_uraian_id', 'left');
+        $this->db->where('t.visible', 1);
+
+        if ($roleId == 5 || $roleId == 9) {
+            $this->db->where('t.user_id', $userId);
+        }
+
+        if (!empty($tahun) && $tahun != '0' && $tahun != 'all') {
+            $tahunInt = (int)$tahun;
+            $this->db->group_start();
+            $this->db->where('t.tahun', $tahunInt);
+            $this->db->or_where('YEAR(t.tanggal_kuesioner)', $tahunInt);
+            $this->db->group_end();
+        }
+
+        $this->db->order_by('t.tanggal_kuesioner', 'desc');
+        return $this->db->get()->result();
+    }
 }
